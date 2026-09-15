@@ -1,5 +1,15 @@
 # Progress Report: Load Cell ADC Noise Reduction
 
+## Update: 535 g Calibration Result
+
+The file-name convention was confirmed after the initial analysis. The prefix `535g` denotes the applied 535 g load, `20250502` denotes 2 May 2025, `pm427` denotes 4:27 PM, `ms20` denotes a 20 ms sampling interval, and `hz<number>` denotes the interference-frequency test condition.
+
+This information enabled a revised supervised experiment. The `hz0` recording was used as the low-interference reference for the same stable 535 g load. A paper-inspired R-DAE was trained with the nonzero-frequency recordings as inputs and the robust ADC level from `hz0` as the target. The test portion of every nonzero-frequency recording was kept separate from model training.
+
+The mean raw RMSE from the `hz0` reference was 186,229.6 ADC counts. The R-DAE reduced the mean RMSE to 56.7 ADC counts, corresponding to a 99.99994% reduction in mean squared error. The result is valid for this fixed 535 g experiment only. It is not a general model for unknown weights because all training targets represent 535 g.
+
+The revised implementation and outputs are `loadcell_adc_535g_rdae.py`, `adc_535g_rdae_results.csv`, `adc_535g_rdae_results.png`, and `adc_535g_rdae.keras`.
+
 ## 1. Introduction
 
 This report describes the progress of a load cell signal noise-reduction study. The objective was to improve the quality of raw Analog-to-Digital Converter (ADC) readings using a machine-learning-based recurrent denoising autoencoder (R-DAE). The approach was informed by the supplied research paper, which uses Long Short-Term Memory (LSTM) layers to learn temporal characteristics from noisy time-series data.
@@ -85,3 +95,7 @@ At the current stage, the R-DAE model should not be used as the primary noise-re
 - `adc_rdae_results.png`: Visual comparison of raw ADC, median-filtered, and R-DAE signals.
 - `adc_rdae_denoiser.keras`: Saved trained R-DAE model.
 - `adc_rdae_scaler.pkl`: Saved robust scaler used by the model.
+- `loadcell_adc_535g_rdae.py`: Supervised R-DAE for the fixed 535 g calibration experiment.
+- `adc_535g_rdae_results.csv`: Held-out error values relative to the `hz0` reference.
+- `adc_535g_rdae_results.png`: Raw and denoised ADC comparisons for the 535 g experiment.
+- `adc_535g_rdae.keras`: Saved 535 g R-DAE model.
