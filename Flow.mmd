@@ -1,0 +1,38 @@
+flowchart TD
+    A["Load Cell and ADC Acquisition"]
+    --> B["Raw ADC Recordings"]
+
+    B --> C["Signal Quality Checks"]
+    C --> D["Reference Selection and Alignment"]
+    D --> E["Calibration and Normalization"]
+    E --> F["Sliding Window Segmentation"]
+
+    F --> G["Noisy Input Windows X"]
+    F --> H["Reference Target Windows Y"]
+
+    G --> I["LSTM-RDAE Encoder"]
+    I --> J["Latent Representation"]
+    J --> K["LSTM-RDAE Decoder"]
+    K --> L["Reconstructed Signal"]
+
+    L --> M["Reconstruction Loss vs Y"]
+    H --> M
+
+    M --> N["Backpropagation and Optimizer"]
+    N --> O{"Validation Converged?"}
+    O -- "No" --> I
+    O -- "Yes" --> P["Save Best Model"]
+
+    P --> Q["Test on Unseen Recordings"]
+    Q --> R["Denoised Output"]
+
+    R --> S["MSE, MAE, RMSE and SNR"]
+    R --> T["Waveform and Spectrum Analysis"]
+    R --> U["Weight Error Evaluation"]
+
+    S --> V["Compare with Baseline Filters"]
+    T --> V
+    U --> V
+
+    V --> W["Final Results"]
+    W --> X["Deployment Feasibility"]

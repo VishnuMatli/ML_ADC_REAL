@@ -1,0 +1,55 @@
+flowchart TD
+    %% Data Flow
+    A[Raw Bearing Vibration Signals] --> B[Data Preprocessing]
+    B --> C[Signal Segmentation]
+    C --> D[Windowing: Length = w]
+    D --> E["Normalization: [0,1]"]
+    
+    %% R-DAE Architecture
+    E --> F[R-DAE Encoder]
+    F --> F1[LSTM Layer 1: n1 units, return_sequences]
+    F1 --> F2[LSTM Layer 2: n2 units]
+    F2 --> G[Bottleneck: Feature Representation]
+    
+    G --> H[R-DAE Decoder]
+    H --> H1[RepeatVector: w]
+    H1 --> H2[LSTM Layer 2: n2 units, return_sequences]
+    H2 --> H3[LSTM Layer 1: n1 units, return_sequences]
+    H3 --> H4[TimeDistributed Dense: 1 unit]
+    H4 --> I[Reconstructed Signal]
+    
+    %% Feature Extraction
+    G --> J[Feature Vector Extraction]
+    J --> K[Feature Matrix: N × n2]
+    
+    %% Improved FCM Clustering
+    K --> L[Improved FCM Algorithm]
+    L --> L1[Initialize Cluster Centers]
+    L1 --> L2[Calculate Membership Matrix]
+    L2 --> L3[Update Cluster Centers]
+    L3 --> L4[Check Convergence]
+    L4 -->|No| L2
+    L4 -->|Yes| L5[Health State Classification]
+    
+    %% RUL Prediction
+    L5 --> M[Health Indicator Construction]
+    M --> N[Trend Analysis: Polynomial/Fitting]
+    N --> O[RUL Prediction Model]
+    O --> P[Remaining Useful Life Estimation]
+    
+    %% Feedback Loops (Key Innovations)
+    I --> E[Reconstruction Error Feedback]
+    style I fill:#FFEBEE,stroke:#C62828,stroke-width:2px,color:#7F1D1D
+    
+    %% Styling
+    classDef input fill:#E3F2FD,stroke:#1565C0,stroke-width:2px,color:#0D3B66,font-weight:600;
+    classDef process fill:#E8F5E8,stroke:#2E7D32,stroke-width:2px,color:#1B4332,font-weight:600;
+    classDef decision fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px,color:#7C2D12,font-weight:600;
+    classDef output fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px,color:#4C1D95,font-weight:600;
+    classDef feedback fill:#FFEBEE,stroke:#C62828,stroke-width:2px,stroke-dasharray: 5 5,color:#7F1D1D,font-weight:600;
+    
+    class A input;
+    class B,C,D,E,F,F1,F2,G,H,H1,H2,H3,H4,I,J process;
+    class L,L1,L2,L3,L4,L5 decision;
+    class M,N,O,P output;
+    class E feedback;

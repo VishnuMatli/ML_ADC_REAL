@@ -1,0 +1,25 @@
+flowchart TD
+    A[Raw Bearing Vibration Signals] --> B[Data Preprocessing]
+    B --> C[Segmentation into Windows]
+    C --> D[Normalization]
+    D --> E[R-DAE Feature Extraction]
+    E --> F[Encoder: LSTM Layers]
+    F --> G[Bottleneck Representation]
+    G --> H[Decoder: LSTM Layers]
+    H --> I[Reconstructed Signal]
+    I --> J[Feature Vector Extraction]
+    J --> K[Improved FCM Clustering]
+    K --> L[Health State Classification]
+    L --> M[RUL Prediction Model]
+    M --> N[Remaining Useful Life Estimation]
+    
+    %% Style definitions
+    classDef process fill:#E3F2FD,stroke:#1565C0,stroke-width:2px,color:#0D3B66,font-weight:600;
+    classDef decision fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px,color:#7C2D12,font-weight:600;
+    classDef data fill:#E8F5E8,stroke:#2E7D32,stroke-width:2px,color:#1B4332,font-weight:600;
+    classDef output fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px,color:#4C1D95,font-weight:600;
+    
+    class A,B,C,D,E,F,G,H,I,J process;
+    class K decision;
+    class L,M,N output;
+    class A data;
