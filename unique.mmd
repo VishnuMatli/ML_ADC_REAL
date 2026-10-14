@@ -1,0 +1,24 @@
+flowchart TD
+    A["LSTM-RDAE Comparison"]
+
+    A --> B["Our Load-Cell Approach"]
+    A --> C["Uploaded Bearing Approach"]
+
+    B --> B1["Sensor Calibration"]
+    B --> B2["Reference Signal Alignment"]
+    B --> B3["Denoising Loss Optimization"]
+    B --> B4["SNR and Reconstruction Metrics"]
+    B --> B5["Weight Measurement Accuracy"]
+
+    C --> C1["Explicit Encoder-Decoder Layers"]
+    C --> C2["Reconstruction-Error Feedback"]
+    C --> C3["Improved FCM Clustering"]
+    C --> C4["Health Indicator Construction"]
+    C --> C5["Polynomial Trend Fitting"]
+    C --> C6["Remaining Useful Life Estimation"]
+
+    classDef ours fill:#e3f2fd,stroke:#1976d2,color:#12345a
+    classDef uploaded fill:#fff3e0,stroke:#ef6c00,color:#7a3000
+
+    class B,B1,B2,B3,B4,B5 ours
+    class C,C1,C2,C3,C4,C5,C6 uploaded

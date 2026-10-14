@@ -1,0 +1,47 @@
+flowchart TD
+    subgraph OUR["OUR APPROACH: LOAD-CELL NOISE REDUCTION"]
+        A1["Load Cell ADC Data"]
+        A2["Preprocessing and Calibration"]
+        A3["Windowing and Normalization"]
+        A4["LSTM-RDAE Encoder"]
+        A5["Latent Representation"]
+        A6["LSTM-RDAE Decoder"]
+        A7["Denoised Signal"]
+        A8["MSE, MAE, RMSE, SNR"]
+        A9["Weight Accuracy and Deployment"]
+
+        A1 --> A2 --> A3 --> A4
+        A4 --> A5 --> A6 --> A7
+        A7 --> A8 --> A9
+    end
+
+    subgraph UPLOADED["UPLOADED APPROACH: BEARING HEALTH PREDICTION"]
+        B1["Bearing Vibration Signals"]
+        B2["Preprocessing and Windowing"]
+        B3["LSTM-RDAE Encoder"]
+        B4["Bottleneck Features"]
+        B5["LSTM-RDAE Decoder"]
+        B6["Reconstructed Signal"]
+        B7["Feature Extraction"]
+        B8["Improved FCM Clustering"]
+        B9["Health-State Classification"]
+        B10["Trend Analysis"]
+        B11["RUL Prediction"]
+
+        B1 --> B2 --> B3 --> B4
+        B4 --> B5 --> B6
+        B4 --> B7 --> B8 --> B9
+        B9 --> B10 --> B11
+    end
+
+    A3 -. "Shared concept" .-> B2
+    A4 -. "Shared architecture" .-> B3
+    A5 -. "Shared concept" .-> B4
+    A6 -. "Shared architecture" .-> B5
+    A7 -. "Different objectives" .-> B6
+
+    classDef ours fill:#e3f2fd,stroke:#1976d2,color:#12345a
+    classDef uploaded fill:#fff3e0,stroke:#ef6c00,color:#7a3000
+
+    class A1,A2,A3,A4,A5,A6,A7,A8,A9 ours
+    class B1,B2,B3,B4,B5,B6,B7,B8,B9,B10,B11 uploaded
