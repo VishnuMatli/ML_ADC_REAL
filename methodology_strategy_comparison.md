@@ -65,8 +65,9 @@ flowchart LR
 
 ## Markdown comparison table
 
+
 | Stage                  | Paper strategy                           | Implemented strategy                             | Planned strategy                                       | Difference                                      | Upgrade needed                                                                           |
-| ---------------------- | ---------------------------------------- | ------------------------------------------------ | ------------------------------------------------------ | ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| ------------------------ | ------------------------------------------ | -------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | Data source            | Bearing vibration signals                | Load-cell ADC recordings                         | Multi-load, multi-frequency sensor dataset             | Different domain and target objective           | Collect wider dataset with multiple loads and frequency conditions                       |
 | Goal                   | Fault diagnosis + RUL                    | Noise reduction + calibration                    | Denoising + health assessment + RUL                    | Current code stops at signal quality            | Extend task from denoising to degradation tracking                                       |
 | Preprocessing          | Segmentation + windowing + normalization | Scaling + windowing + median baseline comparison | Robust preprocessing + calibration pipeline            | Similar structure but weaker pipeline           | Standardize a single preprocessing function and keep train/validation split by time/load |

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Input, LSTM, RepeatVector, TimeDistributed, Dense
@@ -145,11 +146,13 @@ def main():
     print('Step 1: synthetic load-cell dataset generation')
     t, clean, noisy = generate_loadcell_signal(n_samples=3000)
 
-    train_noisy, train_clean, val_noisy, val_clean, test_noisy, test_clean = split_signal(noisy, clean)
-
+    # Use full signal range for this demo pipeline so sigmoid output can represent
+    # the complete trajectory during plotting and reconstruction.
     signal_scaler = MinMaxScaler(feature_range=(0.0, 1.0))
-    all_train_values = np.concatenate([train_noisy.reshape(-1, 1), train_clean.reshape(-1, 1)])
-    signal_scaler.fit(all_train_values)
+    all_values = np.concatenate([noisy.reshape(-1, 1), clean.reshape(-1, 1)])
+    signal_scaler.fit(all_values)
+
+    train_noisy, train_clean, val_noisy, val_clean, test_noisy, test_clean = split_signal(noisy, clean)
 
     train_noisy_norm = signal_scaler.transform(train_noisy.reshape(-1, 1)).ravel()
     val_noisy_norm = signal_scaler.transform(val_noisy.reshape(-1, 1)).ravel()
@@ -202,10 +205,19 @@ def main():
     reconstructed_seq = np.clip(reconstructed_seq, 0.0, 1.0)
     reconstructed_orig = signal_scaler.inverse_transform(reconstructed_seq.reshape(-1, 1)).ravel()
 
-    mse_noisy = mean_squared_error(test_clean, test_noisy)
-    mae_noisy = mean_absolute_error(test_clean, test_noisy)
-    mse_recon = mean_squared_error(test_clean, reconstructed_orig)
-    mae_recon = mean_absolute_error(test_clean, reconstructed_orig)
+    # Build aligned reference/noisy series from the same windowed domain for fair visual comparison.
+    reference_seq = reconstruct_signal(y_test.reshape(-1, WINDOW_SIZE, 1), len(test_clean_norm), WINDOW_SIZE)
+    reference_orig = signal_scaler.inverse_transform(reference_seq.reshape(-1, 1)).ravel()
+    noisy_seq = reconstruct_signal(X_test.reshape(-1, WINDOW_SIZE, 1), len(test_noisy_norm), WINDOW_SIZE)
+    noisy_orig = signal_scaler.inverse_transform(noisy_seq.reshape(-1, 1)).ravel()
+
+    valid_start = WINDOW_SIZE // 2
+    valid_end = len(test_clean) - (WINDOW_SIZE // 2)
+
+    mse_noisy = mean_squared_error(reference_orig[valid_start:valid_end], noisy_orig[valid_start:valid_end])
+    mae_noisy = mean_absolute_error(reference_orig[valid_start:valid_end], noisy_orig[valid_start:valid_end])
+    mse_recon = mean_squared_error(reference_orig[valid_start:valid_end], reconstructed_orig[valid_start:valid_end])
+    mae_recon = mean_absolute_error(reference_orig[valid_start:valid_end], reconstructed_orig[valid_start:valid_end])
 
     print('\n==== Evaluation summary ====')
     print(f'Noisy test MSE: {mse_noisy:.6f} | MAE: {mae_noisy:.6f}')
@@ -217,24 +229,69 @@ def main():
     axes[0, 0].plot(t[:500], clean[:500], label='Clean signal', linewidth=2)
     axes[0, 0].plot(t[:500], noisy[:500], label='Noisy signal', alpha=0.7)
     axes[0, 0].set_title('Step 1: synthetic load-cell signal')
+    axes[0, 0].set_xlabel('Time index')
+    axes[0, 0].set_ylabel('Load-cell value')
     axes[0, 0].legend()
     axes[0, 0].grid(alpha=0.25)
 
     axes[0, 1].plot(history.history['loss'], label='Train loss')
     axes[0, 1].plot(history.history['val_loss'], label='Validation loss')
     axes[0, 1].set_title('Step 2: R-DAE training loss')
+    axes[0, 1].set_xlabel('Epoch')
+    axes[0, 1].set_ylabel('Loss (MSE)')
     axes[0, 1].legend()
     axes[0, 1].grid(alpha=0.25)
 
-    axes[1, 0].plot(test_clean[:300], label='Reference', linewidth=2)
-    axes[1, 0].plot(reconstructed_orig[:300], label='Reconstruction', linewidth=1.5)
+    view_start = valid_start
+    view_end = min(valid_start + 300, valid_end)
+    axes[1, 0].plot(reference_orig[view_start:view_end], label='Reference', linewidth=2)
+    axes[1, 0].plot(noisy_orig[view_start:view_end], label='Noisy', alpha=0.6)
+    axes[1, 0].plot(reconstructed_orig[view_start:view_end], label='Reconstruction', linewidth=1.5)
     axes[1, 0].set_title('Step 3: reconstruction output')
+    axes[1, 0].set_xlabel('Time index (test segment)')
+    axes[1, 0].set_ylabel('Load-cell value')
     axes[1, 0].legend()
     axes[1, 0].grid(alpha=0.25)
 
-    axes[1, 1].scatter(feature_test[:, 0], feature_test[:, 1], c=labels, cmap='viridis', s=20, alpha=0.8)
-    axes[1, 1].scatter(centers[:, 0], centers[:, 1], c='red', s=80, marker='X')
-    axes[1, 1].set_title('Step 4: fuzzy clustering on latent features')
+    err_mean_idx = -3
+    err_std_idx = -2
+    scatter = axes[1, 1].scatter(
+        feature_test[:, err_mean_idx],
+        feature_test[:, err_std_idx],
+        c=labels,
+        cmap='viridis',
+        s=20,
+        alpha=0.8,
+    )
+    axes[1, 1].scatter(centers[:, err_mean_idx], centers[:, err_std_idx], c='red', s=80, marker='X')
+
+    unique_labels = np.unique(labels)
+    cluster_handles = [
+        Line2D(
+            [0],
+            [0],
+            marker='o',
+            linestyle='None',
+            markerfacecolor=scatter.cmap(scatter.norm(cluster_id)),
+            markeredgecolor='none',
+            markersize=7,
+            label=f'Cluster {cluster_id}',
+        )
+        for cluster_id in unique_labels
+    ]
+    centroid_handle = Line2D(
+        [0],
+        [0],
+        marker='X',
+        linestyle='None',
+        color='red',
+        markersize=8,
+        label='Centroid',
+    )
+    axes[1, 1].legend(handles=cluster_handles + [centroid_handle], title='Step 4 Legend')
+    axes[1, 1].set_title('Step 4: fuzzy clustering on error features')
+    axes[1, 1].set_xlabel('Mean absolute reconstruction error')
+    axes[1, 1].set_ylabel('Std of absolute reconstruction error')
     axes[1, 1].grid(alpha=0.25)
 
     fig.tight_layout()
