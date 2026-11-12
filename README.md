@@ -114,3 +114,25 @@ RMSE values are ADC counts relative to the `hz0` 535 g reference.
 
 - [`adc_535g_rdae_evaluation_report.md`](adc_535g_rdae_evaluation_report.md): Final report for the 535 g supervised R-DAE experiment.
 - [`adc_noise_reduction_progress_report.md`](adc_noise_reduction_progress_report.md): Progress report covering the earlier and revised experiments.
+- [`health_trend_validation_report.md`](health_trend_validation_report.md): Validation results, interpretation, and limitations for the multi-file health-trend stage.
+
+## Realtime Single-File Visualization
+
+[`loadcell_realtime_visualization.py`](loadcell_realtime_visualization.py) provides a live dashboard for one ADC file. It visualizes input loading, chronological splitting, temporal windows, R-DAE training loss, reconstruction, bottleneck/error clustering, and health-trend output as the pipeline advances.
+
+Run it with the default single-file input:
+
+```bash
+python3 loadcell_realtime_visualization.py
+```
+
+The default input is `adc_data/535g20250502pm427ms20hz0.txt`. To test without opening a graphical window:
+
+```bash
+MPLBACKEND=Agg python3 loadcell_realtime_visualization.py --epochs 2 --no-show
+```
+
+Outputs:
+
+- `loadcell_realtime_visualization.png`: final six-panel process dashboard.
+- `loadcell_realtime_visualization.csv`: per-test-window cluster, uncertainty, degradation, and state values.
