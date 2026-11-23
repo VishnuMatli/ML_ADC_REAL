@@ -139,22 +139,20 @@ Outputs:
 
 ## Sequential Intermediate Visualization
 
-[`loadcell_sequential_visualization.py`](loadcell_sequential_visualization.py) provides the expanded workflow requested for presentation and debugging. It uses one ADC file and opens each procedure as a separate window. Each window is opened before its stage finishes and redraws progressively as samples, batches, latency measurements, model outputs, or trend points become available. In the normal GUI mode, close the current stage window to start the next stage.
+[`loadcell_sequential_visualization.py`](loadcell_sequential_visualization.py) provides a weight-domain realtime workflow for presentation and debugging. It uses one ADC file and opens each procedure as a separate window. Every GUI window has a **Next** button in the lower-right area. Click **Next**, or close the window using its exit icon, to advance to the next stage.
 
 The stages are:
 
-1. ADC input and provisional ADC-to-weight interpretation
-2. Chronological train/validation/test split and window counts
-3. Moving-average filtering/reference generation and residual size
-4. Normalization and temporal windows entering the LSTM
-5. Live R-DAE training loss
-6. Encoder/bottleneck output and encoding latency
-7. Total filtering: noisy input, pseudo-clean target, and R-DAE output
-8. FCM clustering of reconstruction-error features
-9. Health/degradation trend and state output
-10. Final metrics and generated files
+1. ADC input and provisional ADC-to-weight conversion
+2. Chronological weight split and temporal window counts
+3. Raw weight target generation by moving-average smoothing and residual filtering
+4. Weight normalization and temporal windows entering the R-DAE
+5. Live R-DAE training and validation MSE loss
+6. R-DAE filtering/reconstruction in grams with MAE and residual diagnostics
+7. Degradation reason analysis from weight drift and residual trend
+8. Final weight-domain metrics and generated files
 
-The R-DAE training window updates after every epoch. The encoding-latency window updates after every encoder batch, and the reconstruction window grows the R-DAE output line after every prediction batch. The clustering and health-trend windows progressively reveal their points and curves after their intermediate values are calculated.
+No encoder/bottleneck or FCM stage is used in this weight-domain workflow. The R-DAE training window updates after every epoch, and the reconstruction window grows the predicted weight curve after every prediction batch.
 
 Run the interactive sequential workflow with:
 
@@ -168,6 +166,6 @@ The default input is `adc_data/535g20250502pm427ms20hz50.txt`. To save every sta
 MPLBACKEND=Agg python3 loadcell_sequential_visualization.py --epochs 1 --no-show
 ```
 
-The default output directory is `sequential_visualizations/`. It contains one PNG per stage and `per_window_results.csv`.
+The default output directory is `sequential_visualizations/`. It contains one PNG for each of the eight weight-domain stages.
 
 The ADC-to-weight panel is a provisional ratio view based on the `535 g` filename metadata. It is not a calibrated weight conversion until known ADC-to-gram calibration measurements are available.
